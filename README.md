@@ -84,7 +84,7 @@ class Students(Base):
 We integrate and use all the other parts we created earlier.
 Import the parts:
 
-‍‍‍```python
+```python
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import models
