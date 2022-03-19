@@ -1,6 +1,6 @@
 # fastapi_heroku_db
 
-First create the database.py file
+###First create the database.py file
 
 Import the SQLAlchemy parts:
 ```python
@@ -54,6 +54,18 @@ Later we will inherit from this class to create each of the database models or c
 ```python
 Base = declarative_base()
 ```
+
+
+
+###Then I create the models.py file:
+
+Import the SQLAlchemy parts:
+
+```python 
+from sqlalchemy import Column, Integer, String
+from database import Base
+```
+
 
 
 
