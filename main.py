@@ -1,69 +1,90 @@
 from fastapi import FastAPI,HTTPException
+# import pandas as pd
 from pydantic import BaseModel
-import json
-import pandas as pd
+import sqlite3
 import requests
 
-app=FastAPI()
+app = FastAPI()
 app2=FastAPI()
 
-Students={
-    'ali':[12,17.7,18],
-    'sara':[14.25,18,15.75],
-    'hasan':[10,14.75,13.56],
-    'reza':[11.5,16.5,13.25]
-}
+class Database:
+    def __init__(self,dbname='student.db'):
+        self.db_connection = sqlite3.connect(dbname)
+    
+    def execute(self,query):
+        db_cursor = self.db_connection.cursor()
+        result = db_cursor.execute(query).fetchall()
+        db_cursor.close()
+        self.db_connection.commit()
+        return result
 
-df=pd.DataFrame(Students,columns=Students.keys())
+DB=Database()
+DB.execute("""
+            CREATE TABLE IF NOT EXISTS students 
+            (name STRING PRIMARY KEY,
+            lesson1 INTEGER, 
+            lesson2 INTEGER, 
+            lesson3 INTEGER)
+""")
 
-class stu(BaseModel):
+
+class Student(BaseModel):
     name: str
-    number1: float
-    number2: float
-    number3: float
+    lesson1: float
+    lesson2: float 
+    lesson3: float 
 
 @app.get('/')
 def read():
-    df_json=df.to_json()
-    return json.loads(df_json)
+    DB = Database()
+    students = DB.execute('SELECT * FROM students')
+    return students
 
 @app.get('/average')
 def average():
-    a={}
-    for i in df.columns:
-        s=df[i].mean()
-        i={i:s}
-        a.update(i)
-    a=pd.Series(a)
-    a_json=a.to_json()
-    return json.loads(a_json)
+    DB = Database()
+    result = DB.execute("""
+                SELECT name, 
+                (lesson1+ lesson2+ lesson3 )/3 
+                as average FROM students
+    """)
+    return result
 
+# ====================================================
 
 @app.post('/insert/')
-def insert(student:stu):
-    if student.name in df.columns:
-            raise HTTPException(status_code=404,detail='This student is available')
-    else:    
-        df[student.name]=[student.number1,student.number2,student.number3]
-        df_json=df.to_json()
-        return json.loads(df_json)
+def insert(student:Student):
+    DB = Database()
+    result = DB.execute(f'SELECT * FROM students WHERE name="{student.name}"')
+    if len(result)>0:
+        raise HTTPException(status_code=404,detail='This student is available')
+    else:
+        DB.execute(
+            f'INSERT INTO students VALUES \
+            ("{student.name}", {student.lesson1}, \
+            {student.lesson2},{student.lesson3})')
+        return student
 
+# =======================================================
 @app.put('/update/{name}')
 def update(name:str):
-    if name in df.columns:
-        for i in df.index:
-            df.loc[i,name]=df.loc[i,name]+1        
-        df_json=df.to_json()
-        return json.loads(df_json)
+    DB = Database()
+    result = DB.execute(f'SELECT * FROM students WHERE name="{name}"')
+    if len(result)>0:
+        DB.execute(
+            f'UPDATE students SET lesson1 = lesson1+1, \
+             lesson2 = lesson2+1, lesson3 = lesson3+1 WHERE name="{name}"')
+        return result
     else:
         raise HTTPException(status_code=404,detail='This student is not available')
 
+# ===========================================================
 @app.delete('/delete/{name}')
 def delete(name:str):
-    if name in df.columns:
-        df.drop(columns=name,axis=1,inplace=True)
-        df_json=df.to_json()
-        return json.loads(df_json)
+    DB = Database()
+    result = DB.execute(f'SELECT * FROM students WHERE name="{name}"')
+    if len(result)>0:
+        DB.execute(f'DELETE FROM students WHERE name="{name}"')
     else:
         raise HTTPException(status_code=404,detail='This student is not available')
 
@@ -77,5 +98,13 @@ def read_app2():
 
 @app2.get('/avg')
 def avg():
-    result=requests.get('https://shielded-plateau-68883.herokuapp.com/average')
+    result=requests.get('https://shrouded-cliffs-86202.herokuapp.com/average')
     return result.json()
+
+
+
+
+
+
+
+
