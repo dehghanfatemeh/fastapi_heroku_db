@@ -17,6 +17,8 @@ The file will be located at the same directory in the file `sqlite:///./STUDENT.
 SQLALCHEMY_DATABASE_URL = "sqlite:///./STUDENT.db"
 ```
 
+
+
 Create the SQLAlchemy engine:
 The first step is to create a SQLAlchemy "engine".
 
