@@ -20,6 +20,7 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./STUDENT.db"
 
 
 Create the SQLAlchemy engine:
+
 The first step is to create a SQLAlchemy `engine`.
 We will later use this engine in other places.
 
@@ -35,6 +36,7 @@ engine = create_engine(
 
 
 Create a SessionLocal class: 
+
 Each instance of the SessionLocal class will be a database session. The class itself is not a database session yet.
 
 But once we create an instance of the SessionLocal class, this instance will be the actual database session.
@@ -47,9 +49,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 Create a Base class: 
+
 Later we will inherit from this class to create each of the database models or classes
 ```python
 Base = declarative_base()
 ```
+
+
 
 
