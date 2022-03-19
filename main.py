@@ -1,110 +1,96 @@
-from fastapi import FastAPI,HTTPException
-# import pandas as pd
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
-import sqlite3
-import requests
+import models
+from database import engine, SessionLocal
+from sqlalchemy.orm import Session
 
 app = FastAPI()
-app2=FastAPI()
 
-class Database:
-    def __init__(self,dbname='student.db'):
-        self.db_connection = sqlite3.connect(dbname)
-    
-    def execute(self,query):
-        db_cursor = self.db_connection.cursor()
-        result = db_cursor.execute(query).fetchall()
-        db_cursor.close()
-        self.db_connection.commit()
-        return result
+models.Base.metadata.create_all(bind=engine)
 
-DB=Database()
-DB.execute("""
-            CREATE TABLE IF NOT EXISTS students 
-            (name STRING PRIMARY KEY,
-            lesson1 INTEGER, 
-            lesson2 INTEGER, 
-            lesson3 INTEGER)
-""")
+
+def get_db():
+    try:
+        db = SessionLocal()
+        yield db
+    finally:
+        db.close()
 
 
 class Student(BaseModel):
-    name: str
-    lesson1: float
-    lesson2: float 
-    lesson3: float 
+    name: str 
+    tarikh: int 
+    zaban: int 
 
-@app.get('/')
-def read():
-    DB = Database()
-    students = DB.execute('SELECT * FROM students')
-    return students
 
-@app.get('/average')
-def average():
-    DB = Database()
-    result = DB.execute("""
-                SELECT name, 
-                (lesson1+ lesson2+ lesson3 )/3 
-                as average FROM students
-    """)
-    return result
+@app.get("/")
+def read_api(db: Session = Depends(get_db)):
+    return db.query(models.Students).all()
 
 # ====================================================
+@app.get("/average")
+def average(db: Session = Depends(get_db)):
 
-@app.post('/insert/')
-def insert(student:Student):
-    DB = Database()
-    result = DB.execute(f'SELECT * FROM students WHERE name="{student.name}"')
-    if len(result)>0:
-        raise HTTPException(status_code=404,detail='This student is available')
+    avg = db.execute('SELECT name, (tarikh+ zaban )/2 as average FROM students').fetchall()
+
+
+    return avg
+# ======================================================================
+@app.post("/insert")
+def create(name: Student, db: Session = Depends(get_db)):
+
+    student_model = db.query(models.Students).filter(models.Students.name == name.name).first()
+
+    if student_model is None:
+        student_model = models.Students(
+          name = name.name,
+          tarikh = name.tarikh,
+          zaban = name.zaban
+        )
+
     else:
-        DB.execute(
-            f'INSERT INTO students VALUES \
-            ("{student.name}", {student.lesson1}, \
-            {student.lesson2},{student.lesson3})')
-        return student
+        raise HTTPException(
+            status_code=400,
+            detail=f"name {name.name} : Does exist"
+        )
 
-# =======================================================
-@app.put('/update/{name}')
-def update(name:str):
-    DB = Database()
-    result = DB.execute(f'SELECT * FROM students WHERE name="{name}"')
-    if len(result)>0:
-        DB.execute(
-            f'UPDATE students SET lesson1 = lesson1+1, \
-             lesson2 = lesson2+1, lesson3 = lesson3+1 WHERE name="{name}"')
-        return result
-    else:
-        raise HTTPException(status_code=404,detail='This student is not available')
+    db.add(student_model)
+    db.commit()
 
-# ===========================================================
-@app.delete('/delete/{name}')
-def delete(name:str):
-    DB = Database()
-    result = DB.execute(f'SELECT * FROM students WHERE name="{name}"')
-    if len(result)>0:
-        DB.execute(f'DELETE FROM students WHERE name="{name}"')
-    else:
-        raise HTTPException(status_code=404,detail='This student is not available')
+    return name
+# ========================================================================
+@app.put("/update/{name}")
+def update(name: str, db: Session = Depends(get_db)):
 
+    student_model = db.query(models.Students).filter(models.Students.name == name).first()
 
+    if student_model is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"name {name} : Does not exist"
+        )
 
+    student_model.tarikh = student_model.tarikh + 1
+    student_model.zaban = student_model.zaban + 1
+  
+    db.add(student_model)
+    db.commit()
 
-@app2.get('/')
-def read_app2():
-    return {'msg':'App 2'}
+    return db.query(models.Students).filter(models.Students.name == name).first()
+# =========================================================================
 
+@app.delete("/{name}")
+def delete(name: str, db: Session = Depends(get_db)):
 
-@app2.get('/avg')
-def avg():
-    result=requests.get('https://shrouded-cliffs-86202.herokuapp.com/average')
-    return result.json()
+    student_model = db.query(models.Students).filter(models.Students.name == name).first()
 
+    if student_model is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"name {name} : Does not exist"
+        )
 
+    db.delete(student_model)
 
-
-
-
-
-
+    db.commit()
+    return 'ok'
