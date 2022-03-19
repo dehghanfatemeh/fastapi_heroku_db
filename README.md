@@ -31,7 +31,11 @@ engine = create_engine(
 
 
 
-Create a SessionLocal class: Each instance of the SessionLocal class will be a database session. The class itself is not a database session yet.
+
+
+
+Create a SessionLocal class: 
+Each instance of the SessionLocal class will be a database session. The class itself is not a database session yet.
 
 But once we create an instance of the SessionLocal class, this instance will be the actual database session.
 ```python
@@ -39,7 +43,11 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 ```
 
 
-Create a Base class: Later we will inherit from this class to create each of the database models or classes
+
+
+
+Create a Base class: 
+Later we will inherit from this class to create each of the database models or classes
 ```python
 Base = declarative_base()
 ```
