@@ -30,6 +30,7 @@ engine = create_engine(
 ```
 
 
+
 Create a SessionLocal class: Each instance of the SessionLocal class will be a database session. The class itself is not a database session yet.
 
 But once we create an instance of the SessionLocal class, this instance will be the actual database session.
