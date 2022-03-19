@@ -59,7 +59,7 @@ Base = declarative_base()
 
 ### Then I create the models.py file:
 
-Import the SQLAlchemy parts:
+Import the parts:
 
 ```python 
 from sqlalchemy import Column, Integer, String
@@ -79,4 +79,15 @@ class Students(Base):
 ```
 
 
+### Then I create the main.py file:
 
+We integrate and use all the other parts we created earlier.
+Import the parts:
+
+‍‍‍```python
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel
+import models
+from database import engine, SessionLocal
+from sqlalchemy.orm import Session
+```
