@@ -119,3 +119,14 @@ def get_db():
     finally:
         db.close()
 ```
+
+
+We create a class that inherits from BaseModel:
+```python
+class Student(BaseModel):
+    name: str 
+    tarikh: int 
+    zaban: int 
+```
+
+
