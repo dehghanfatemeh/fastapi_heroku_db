@@ -129,4 +129,14 @@ class Student(BaseModel):
     zaban: int 
 ```
 
+Using the get method, we read the data, 
+we are creating the database session before each request in the dependency with yield, and then closing it afterwards.
+```python
+@app.get("/")
+def read_api(db: Session = Depends(get_db)):
+    return db.query(models.Students).all()
+```
+
+
+
 
