@@ -1,7 +1,10 @@
 fastapi
-uvicorn
-gunicorn
-uvloop
+uvicorn 
+gunicorn 
+uvloop 
 httptools
+
+sqlalchemy
+sqlalchemy.orm
+# sqlalchemy.ext.declarative
 pydantic
-requests
