@@ -1,4 +1,3 @@
-from unicodedata import name
 from sqlalchemy import Column, Integer, String
 from database import Base
 
