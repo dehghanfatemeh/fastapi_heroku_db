@@ -91,3 +91,14 @@ import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
 ```
+
+
+Build app:
+```python
+app = FastAPI()
+```
+Create the database tables:
+```python
+models.Base.metadata.create_all(bind=engine)
+```
+
