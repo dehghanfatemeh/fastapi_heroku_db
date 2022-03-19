@@ -30,6 +30,9 @@ engine = create_engine(
 )
 ```
 
+Create a dependency:
+We need to have an independent database session/connection (SessionLocal) per request, use the same session through all the request and then close it after the request is finished.
+
 
 
 
