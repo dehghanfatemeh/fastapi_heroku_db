@@ -38,3 +38,10 @@ But once we create an instance of the SessionLocal class, this instance will be 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 ```
 
+
+Create a Base class: Later we will inherit from this class to create each of the database models or classes
+```python
+Base = declarative_base()
+```
+
+
